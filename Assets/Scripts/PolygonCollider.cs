@@ -42,4 +42,10 @@ public class PolygonColliderZone : MonoBehaviour
 
         return (u >= 0) && (v >= 0) && (u + v <= 1);
     }
+
+    public Vector3 GetPoint(int index)
+    {
+        return trianglePoints[index];
+    }
+
 }

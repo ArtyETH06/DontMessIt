@@ -43,20 +43,29 @@ public class ARZoneDrawer : MonoBehaviour
             }
         }
     }
-
     void UpdateMesh()
     {
         if (points.Count < 3) return;
 
+        if (mesh == null)
+        {
+            mesh = new Mesh();
+            var mf = GetComponent<MeshFilter>();
+            if (mf != null) mf.mesh = mesh;
+            else Debug.LogWarning("❌ Pas de MeshFilter trouvé sur ARZoneDrawer.");
+        }
+
+        mesh.Clear();
+
         Vector3[] verts = points.ToArray();
         int[] indices = new Triangulator(points).Triangulate();
 
-        mesh.Clear();
         mesh.vertices = verts;
         mesh.triangles = indices;
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
     }
+
 
     public void ValidateZone()
     {
@@ -100,6 +109,13 @@ public class ARZoneDrawer : MonoBehaviour
     public List<Vector3> GetPoints()
     {
         return points;
+    }
+
+
+    public void SetPoints(List<Vector3> newPoints)
+    {
+        points = newPoints;
+        UpdateMesh();
     }
 
 }

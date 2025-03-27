@@ -22,8 +22,14 @@ public class GameController : MonoBehaviour
     public Button retryButton;
     public Button returnToMenuButton;
 
+    [Header("UI Manager")]
+    public GameUIManager uiManager;
+
     [Header("Timing")]
     public float timePerRound = 5f;
+
+    [Header("Effets visuels")]
+    public GameObject successParticlesPrefab;
 
     private int score = 0;
     private float timer = 0f;
@@ -38,6 +44,11 @@ public class GameController : MonoBehaviour
 
         gameOverPanel.SetActive(false);
         UpdateScoreUI();
+        // On attend le démarrage via GameStartManager
+    }
+
+    public void StartGameplay()
+    {
         StartCoroutine(StartNewRound());
     }
 
@@ -57,6 +68,10 @@ public class GameController : MonoBehaviour
                 statusText.text = "✅ Bien joué !";
                 score++;
                 UpdateScoreUI();
+
+                // ✨ Afficher particules
+                SpawnSuccessParticles(currentTargetZone);
+
                 StartCoroutine(StartNewRound());
             }
             else
@@ -71,7 +86,18 @@ public class GameController : MonoBehaviour
 
     IEnumerator StartNewRound()
     {
-        yield return new WaitForSeconds(1f); // Petite pause avant le prochain round
+        if (zoneGenerator.coloredZones.Count == 0)
+        {
+            Debug.LogError("Aucune zone colorée générée !");
+            statusText.text = "❌ Guardian manquant.";
+            gameOverPanel.SetActive(true);
+            finalScoreText.text = "Score final : " + score;
+            retryButton.gameObject.SetActive(false);
+            returnToMenuButton.gameObject.SetActive(true);
+            yield break;
+        }
+
+        yield return new WaitForSeconds(1f);
 
         currentTargetZone = zoneGenerator.coloredZones[Random.Range(0, zoneGenerator.coloredZones.Count)];
 
@@ -92,7 +118,8 @@ public class GameController : MonoBehaviour
     {
         isRoundActive = false;
         gameOverPanel.SetActive(true);
-        finalScoreText.text = "Score final : " + score;
+        finalScoreText.text = "Score final: " + score;
+        uiManager.ShowGameOver();
     }
 
     void RestartGame()
@@ -102,6 +129,19 @@ public class GameController : MonoBehaviour
 
     void ReturnToMenu()
     {
-        SceneManager.LoadScene("MenuScene"); // Remplace par le nom exact de ta scène de menu
+        SceneManager.LoadScene("Menu"); // Remplace si nom différent
+    }
+
+    void SpawnSuccessParticles(ColoredZone zone)
+    {
+        if (successParticlesPrefab == null) return;
+
+        Vector3 p1 = zone.collider.GetPoint(0);
+        Vector3 p2 = zone.collider.GetPoint(1);
+        Vector3 p3 = zone.collider.GetPoint(2);
+        Vector3 center = (p1 + p2 + p3) / 3f;
+
+        GameObject particles = Instantiate(successParticlesPrefab, center, Quaternion.identity);
+        Destroy(particles, 2f);
     }
 }

@@ -1,23 +1,43 @@
+// ===============================
+// 🧩 1. GuardianZoneGenerator.cs
+// ===============================
 using System.Collections.Generic;
 using UnityEngine;
 
 public class GuardianZoneGenerator : MonoBehaviour
 {
     [Header("Références")]
-    public ARZoneDrawer zoneDrawer; // Référence vers le composant qui a les points
-    public Material zoneMaterial;   // Matériau de base à colorer
-
-    [Header("Options")]
-    public Transform zoneParent;    // Pour regrouper les zones générées
-    public Gradient colorGradient;  // Pour générer de jolies couleurs
+    public ARZoneDrawer zoneDrawer;
+    public Material zoneMaterial;
+    public Transform zoneParent;
+    public Gradient colorGradient;
     public List<ColoredZone> coloredZones = new List<ColoredZone>();
+
+    [Header("Mode Test (Editeur seulement)")]
+    public bool useTestGuardianInEditor = true;
+
+    void Start()
+    {
+#if UNITY_EDITOR
+        if (useTestGuardianInEditor && zoneDrawer.GetPoints().Count < 3)
+        {
+            Debug.Log("🧪 Mode test activé : Guardian fictif.");
+            GenerateTestGuardian();
+            GenerateColoredZones();
+        }
+#endif
+    }
 
     public void GenerateColoredZones()
     {
         ClearOldZones();
 
-        List<Vector3> points = zoneDrawer.GetPoints(); // Méthode à ajouter
-        if (points.Count < 3) return;
+        List<Vector3> points = zoneDrawer.GetPoints();
+        if (points.Count < 3)
+        {
+            Debug.LogWarning("Pas assez de points pour générer les zones.");
+            return;
+        }
 
         Triangulator triangulator = new Triangulator(points);
         int[] triangles = triangulator.Triangulate();
@@ -68,5 +88,16 @@ public class GuardianZoneGenerator : MonoBehaviour
             Destroy(child.gameObject);
         }
         coloredZones.Clear();
+    }
+
+    void GenerateTestGuardian()
+    {
+        zoneDrawer.SetPoints(new List<Vector3>
+        {
+            new Vector3(-0.5f, 0, -0.5f),
+            new Vector3(0.5f, 0, -0.5f),
+            new Vector3(0.5f, 0, 0.5f),
+            new Vector3(-0.5f, 0, 0.5f)
+        });
     }
 }
