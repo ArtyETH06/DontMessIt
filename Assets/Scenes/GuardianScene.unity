@@ -1037,7 +1037,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 875023164}
         m_TargetAssemblyTypeName: ARZoneDrawer, Assembly-CSharp
-        m_MethodName: ValidateZone
+        m_MethodName: ValidateAndLoadMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
